@@ -3,35 +3,60 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Random Suggestion</title>
+  <title>What should I eat today?</title>
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 50px; background: #f0f0f0; }
-    .box { font-size: 24px; padding: 20px; border: 2px dashed #aaa; border-radius: 10px; background: white; display: inline-block; }
-    button { margin-top: 20px; padding: 10px 20px; font-size: 18px; }
+    body { font-family: sans-serif; text-align: center; padding: 60px; background:#f0f0f0; }
+    .box { min-height: 80px; font-size: 24px; padding: 20px 30px;
+           border: 2px dashed #aaa; border-radius: 10px; background:#fff;
+           display:inline-flex; align-items:center; justify-content:center;
+           margin-bottom: 24px; }
+    button { padding: 12px 28px; font-size: 18px; border: none;
+             border-radius: 8px; cursor: pointer; }
+    button:disabled { opacity:.5; cursor: not-allowed; }
   </style>
 </head>
 <body>
   <h1>🎲 Random Suggestion</h1>
-  <div class="box" id="suggestion">Click the button below!</div>
-  <br>
-  <button onclick="showRandom()">Get Another</button>
+
+  <!-- Empty on first load -->
+  <div class="box" id="suggestion"></div>
+
+  <button id="go" onclick="startShuffle()">Get Surprise</button>
 
   <script>
+    // 🎁 Edit this list anytime
     const suggestions = [
-      "🎁 Aglio Olio",
-      "🍵 Mala Fried Rice",
-      "📖 Hotpot Kitchen",
-      "🎧 Puasa",
-      "🚶‍♂️ Pork Noodle"
+      "Aglio Olio",
+      "Pork Noodle",
+      "Mala Fried Rice",
+      "Hotpot Kitchen",
+      "Mrs. Yau"
     ];
 
-    function showRandom() {
-      const random = suggestions[Math.floor(Math.random() * suggestions.length)];
-      document.getElementById("suggestion").textContent = random;
-    }
+    // Shuffle animation length (ms) and speed (ms per frame)
+    const SHUFFLE_DURATION = 1500;
+    const FRAME = 100;
 
-    // Show one on page load
-    showRandom();
+    function startShuffle() {
+      const box = document.getElementById("suggestion");
+      const btn = document.getElementById("go");
+      btn.disabled = true;                         // lock button
+
+      let tick = 0;
+      const interval = setInterval(() => {
+        // cycle suggestions
+        box.textContent = suggestions[tick % suggestions.length];
+        tick++;
+      }, FRAME);
+
+      // stop after SHUFFLE_DURATION and pick a random final answer
+      setTimeout(() => {
+        clearInterval(interval);
+        box.textContent = suggestions[Math.floor(Math.random()*suggestions.length)];
+        btn.disabled = false;                      // unlock button
+        btn.textContent = "Try Another";
+      }, SHUFFLE_DURATION);
+    }
   </script>
 </body>
 </html>
