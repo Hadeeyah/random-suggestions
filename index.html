@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Random Suggestion</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 50px; background: #f0f0f0; }
+    .box { font-size: 24px; padding: 20px; border: 2px dashed #aaa; border-radius: 10px; background: white; display: inline-block; }
+    button { margin-top: 20px; padding: 10px 20px; font-size: 18px; }
+  </style>
+</head>
+<body>
+  <h1>🎲 Random Suggestion</h1>
+  <div class="box" id="suggestion">Click the button below!</div>
+  <br>
+  <button onclick="showRandom()">Get Another</button>
+
+  <script>
+    const suggestions = [
+      "🎁 Surprise your friend with a kind message",
+      "🍵 Take a tea break",
+      "📖 Learn a new word in Mandarin",
+      "🎧 Listen to your favorite song",
+      "🚶‍♂️ Go for a 5-minute walk"
+    ];
+
+    function showRandom() {
+      const random = suggestions[Math.floor(Math.random() * suggestions.length)];
+      document.getElementById("suggestion").textContent = random;
+    }
+
+    // Show one on page load
+    showRandom();
+  </script>
+</body>
+</html>
