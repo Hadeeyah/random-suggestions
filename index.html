@@ -44,8 +44,8 @@
   const foodOptions = {
     chinese: [
       "Char Kway Teow", "Hainanese Chicken Rice", "Bak Kut Teh", "Wantan Mee", "Claypot Yee Mee",
-      "Pan Mee", "Yong Tau Foo", "Steamed Fish with Soy Sauce", "Sweet and Sour Pork", "Kam Heong Lala",
-      "Marmite Chicken", "Egg Foo Young"
+      "Pan Mee", "Yong Tau Foo", "Steamed Fish with Soy Sauce", "Sweet and Sour Pork", "Tom Yam Maggie",
+      "Marmite Chicken", "Hotpot Kitchen"
     ],
     malay: [
       "Nasi Lemak", "Nasi Kerabu", "Nasi Campur", "Ayam Masak Merah", "Sambal Sotong",
@@ -67,18 +67,17 @@
   const shuffleDuration = 1500;
   const frameSpeed = 100;
 
-  const hasUsed = localStorage.getItem("hasUsedSuggestion") === "true";
+  const usage = localStorage.getItem("foodSuggestionUsed");
 
   const app = document.getElementById("app");
 
-  if (hasUsed) {
-    // ⛔ Already used — block interaction
+  if (usage === "done") {
     app.innerHTML = `
-      <h2>😋 You’ve already received your food suggestion!</h2>
-      <p>Please scan the QR code again to get a new one.</p>
+      <h2>😋 You’ve used both your suggestions!</h2>
+      <pPlease scan the QR code again next time.</p>
     `;
   } else {
-    // ✅ First-time user — show the UI
+    // Main interface
     app.innerHTML = `
       <h1>🍽️ Can't Decide What to Eat?</h1>
       <p>Select a cuisine below and we'll surprise you!</p>
@@ -91,45 +90,66 @@
       </select>
       <br/>
       <button id="go">Get Suggestion!</button>
-      <div class="box" id="suggestion"> </div>
+      <div class="box" id="suggestion"></div>
     `;
 
-    document.getElementById("go").onclick = () => {
-      const cuisine = document.getElementById("cuisineSelect").value;
-      const box = document.getElementById("suggestion");
-      const btn = document.getElementById("go");
+    let cuisine = "";
+    let usedSecondChance = false;
+
+    const goBtn = document.getElementById("go");
+    const suggestionBox = document.getElementById("suggestion");
+
+    goBtn.onclick = () => {
+      cuisine = document.getElementById("cuisineSelect").value;
 
       if (!cuisine) {
         alert("Please select a cuisine first.");
         return;
       }
 
-      const selectedList = foodOptions[cuisine];
-      btn.disabled = true;
+      goBtn.disabled = true;
+      localStorage.setItem("foodSuggestionUsed", "started");
 
-      // 🔒 Immediately block future refreshes
-      localStorage.setItem("hasUsedSuggestion", "true");
+      shuffleAndReveal(cuisine, () => {
+        // After showing suggestion, show second chance button
+        const tryAgainBtn = document.createElement("button");
+        tryAgainBtn.textContent = "😕 Not satisfied? Try ONE more";
+        tryAgainBtn.onclick = () => {
+          if (!usedSecondChance) {
+            usedSecondChance = true;
+            tryAgainBtn.disabled = true;
 
+            shuffleAndReveal(cuisine, () => {
+              localStorage.setItem("foodSuggestionUsed", "done");
+              tryAgainBtn.remove();
+              goBtn.textContent = "✅ Locked";
+            });
+          }
+        };
+
+        app.appendChild(tryAgainBtn);
+      });
+    };
+
+    function shuffleAndReveal(cuisineKey, callback) {
+      const list = foodOptions[cuisineKey];
       let tick = 0;
       const interval = setInterval(() => {
-        box.textContent = selectedList[tick % selectedList.length];
+        suggestionBox.textContent = list[tick % list.length];
         tick++;
       }, frameSpeed);
 
       setTimeout(() => {
         clearInterval(interval);
-        const result = selectedList[Math.floor(Math.random() * selectedList.length)];
-        const encoded = encodeURIComponent(result + " near me");
-        const gmap = `https://www.google.com/maps/search/${encoded}`;
-
-        box.innerHTML = `
+        const result = list[Math.floor(Math.random() * list.length)];
+        const gmap = `https://www.google.com/maps/search/${encodeURIComponent(result + " near me")}`;
+        suggestionBox.innerHTML = `
           🍽️ Try: <strong>${result}</strong><br>
           📍 <a href="${gmap}" target="_blank">See nearby places on Google Maps</a>
         `;
-
-        btn.textContent = "✅ Done";
+        if (callback) callback();
       }, shuffleDuration);
-    };
+    }
   }
 </script>
 
