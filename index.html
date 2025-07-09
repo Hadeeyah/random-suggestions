@@ -1,69 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>What to Eat?</title>
-  <style>
-    body { font-family: sans-serif; text-align: center; padding: 40px; background: #f5f5f5; }
-    h1 { margin-bottom: 20px; }
-    select, button {
-      font-size: 16px;
-      padding: 10px 16px;
-      margin: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    .box {
-      min-height: 80px;
-      font-size: 22px;
-      padding: 20px 30px;
-      border: 2px dashed #aaa;
-      border-radius: 10px;
-      background: #fff;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin: 20px auto;
-      max-width: 300px;
-    }
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-  </style>
-</head>
-<body>
-
 <script>
-  if (localStorage.getItem("hasSeenFoodSuggestion")) {
+  const alreadySeen = localStorage.getItem("hasSeenFoodSuggestion");
+  const alreadyStarted = localStorage.getItem("hasStartedFoodSuggestion");
+
+  if (alreadySeen || alreadyStarted) {
     document.body.innerHTML = `
       <h2>😋 You’ve already got your food suggestion!</h2>
       <p>Next time you're hungry, scan the code again!</p>
     `;
   }
-</script>
 
-<h1>🍽️ Can't Decide What to Eat?</h1>
-<p>Select a cuisine below and we'll surprise you!</p>
-
-<select id="cuisineSelect">
-  <option value="">-- Choose Cuisine --</option>
-  <option value="chinese">Malaysian Chinese</option>
-  <option value="malay">Malay</option>
-  <option value="indian">Indian</option>
-  <option value="western">Western</option>
-</select>
-<br/>
-<button id="go" onclick="startSuggestion()">Get Suggestion!</button>
-
-<div class="box" id="suggestion"> </div>
-
-<script>
   const foodOptions = {
     chinese: [
       "Char Kway Teow", "Hainanese Chicken Rice", "Bak Kut Teh", "Wantan Mee", "Claypot Yee Mee",
-      "Pan Mee", "Yong Tau Foo", "Steamed Fish with Soy Sauce", "Sweet and Sour Pork", "La Zi Ji",
+      "Pan Mee", "Yong Tau Foo", "Steamed Fish with Soy Sauce", "Sweet and Sour Pork", "Tomyam Mee",
       "Marmite Chicken", "Mala Fried Rice"
     ],
     malay: [
@@ -99,6 +48,9 @@
     const selectedList = foodOptions[cuisine];
     btn.disabled = true;
 
+    // 🔒 Mark as started (prevents refresh bypass)
+    localStorage.setItem("hasStartedFoodSuggestion", "yes");
+
     let tick = 0;
     const interval = setInterval(() => {
       box.textContent = selectedList[tick % selectedList.length];
@@ -111,10 +63,9 @@
       box.textContent = `🍽️ Try: ${result}`;
       btn.disabled = true;
       btn.textContent = "✅ Done";
+
+      // 🔒 Mark as completed
       localStorage.setItem("hasSeenFoodSuggestion", "yes");
     }, shuffleDuration);
   }
 </script>
-
-</body>
-</html>
