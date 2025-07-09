@@ -36,17 +36,18 @@
     }
   </style>
 </head>
-<body>
 
+<body>
 <script>
   const alreadySeen = localStorage.getItem("hasSeenFoodSuggestion");
   const alreadyStarted = localStorage.getItem("hasStartedFoodSuggestion");
 
   if (alreadySeen || alreadyStarted) {
-    document.body.innerHTML = `
+    document.write(`
       <h2>😋 You’ve already got your food suggestion!</h2>
       <p>Next time you're hungry, scan the code again!</p>
-    `;
+    `);
+    throw new Error("Stop script execution");
   }
 </script>
 
