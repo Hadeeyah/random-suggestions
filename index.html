@@ -36,18 +36,17 @@
     }
   </style>
 </head>
-
 <body>
-<script>
-  const alreadySeen = localStorage.getItem("hasSeenFoodSuggestion");
-  const alreadyStarted = localStorage.getItem("hasStartedFoodSuggestion");
 
-  if (alreadySeen || alreadyStarted) {
+<!-- ⛔ Block repeated users before anything loads -->
+<script>
+  const hasStarted = localStorage.getItem("hasStartedFoodSuggestion");
+  if (hasStarted) {
     document.write(`
-      <h2>😋 You’ve already got your food suggestion!</h2>
+      <h2>😋 You’ve already received your food suggestion!</h2>
       <p>Next time you're hungry, scan the code again!</p>
     `);
-    throw new Error("Stop script execution");
+    throw new Error("Already viewed");
   }
 </script>
 
@@ -70,8 +69,8 @@
   const foodOptions = {
     chinese: [
       "Char Kway Teow", "Hainanese Chicken Rice", "Bak Kut Teh", "Wantan Mee", "Claypot Yee Mee",
-      "Pan Mee", "Yong Tau Foo", "Steamed Fish with Soy Sauce", "Sweet and Sour Pork", "Tom Yam Maggi",
-      "Marmite Chicken", "Hotpot Kitchen"
+      "Pan Mee", "Yong Tau Foo", "Steamed Fish with Soy Sauce", "Sweet and Sour Pork", "Kam Heong Lala",
+      "Marmite Chicken", "Egg Foo Young"
     ],
     malay: [
       "Nasi Lemak", "Nasi Kerabu", "Nasi Campur", "Ayam Masak Merah", "Sambal Sotong",
@@ -106,7 +105,7 @@
     const selectedList = foodOptions[cuisine];
     btn.disabled = true;
 
-    // 🛡️ Prevent refresh cheating
+    // 🛡 Mark as started to block even after refresh
     localStorage.setItem("hasStartedFoodSuggestion", "yes");
 
     let tick = 0;
@@ -118,19 +117,15 @@
     setTimeout(() => {
       clearInterval(interval);
       const result = selectedList[Math.floor(Math.random() * selectedList.length)];
-      const encodedFood = encodeURIComponent(result + " near me");
-      const googleLink = `https://www.google.com/maps/search/${encodedFood}`;
+      const encoded = encodeURIComponent(result + " near me");
+      const gmap = `https://www.google.com/maps/search/${encoded}`;
 
       box.innerHTML = `
         🍽️ Try: <strong>${result}</strong><br>
-        📍 <a href="${googleLink}" target="_blank">See nearby places on Google Maps</a>
+        📍 <a href="${gmap}" target="_blank">See nearby places on Google Maps</a>
       `;
 
-      btn.disabled = true;
       btn.textContent = "✅ Done";
-
-      // 🎯 Mark final access
-      localStorage.setItem("hasSeenFoodSuggestion", "yes");
     }, shuffleDuration);
   }
 </script>
