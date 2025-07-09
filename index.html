@@ -15,28 +15,34 @@
       border: 1px solid #ccc;
     }
     .box {
-      min-height: 80px;
+      min-height: 100px;
       font-size: 22px;
       padding: 20px 30px;
       border: 2px dashed #aaa;
       border-radius: 10px;
       background: #fff;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      display: inline-block;
       margin: 20px auto;
-      max-width: 300px;
+      max-width: 360px;
+      line-height: 1.6;
     }
     button:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+    }
+    a {
+      text-decoration: none;
+      color: #007BFF;
     }
   </style>
 </head>
 <body>
 
 <script>
-  if (localStorage.getItem("hasSeenFoodSuggestion")) {
+  const alreadySeen = localStorage.getItem("hasSeenFoodSuggestion");
+  const alreadyStarted = localStorage.getItem("hasStartedFoodSuggestion");
+
+  if (alreadySeen || alreadyStarted) {
     document.body.innerHTML = `
       <h2>😋 You’ve already got your food suggestion!</h2>
       <p>Next time you're hungry, scan the code again!</p>
@@ -60,20 +66,10 @@
 <div class="box" id="suggestion"> </div>
 
 <script>
-  const alreadySeen = localStorage.getItem("hasSeenFoodSuggestion");
-  const alreadyStarted = localStorage.getItem("hasStartedFoodSuggestion");
-
-  if (alreadySeen || alreadyStarted) {
-    document.body.innerHTML = `
-      <h2>😋 You’ve already got your food suggestion!</h2>
-      <p>Next time you're hungry, scan the code again!</p>
-    `;
-  }
-
   const foodOptions = {
     chinese: [
       "Char Kway Teow", "Hainanese Chicken Rice", "Bak Kut Teh", "Wantan Mee", "Claypot Yee Mee",
-      "Pan Mee", "Yong Tau Foo", "Steamed Fish with Soy Sauce", "Sweet and Sour Pork", "Tomyam Maggi",
+      "Pan Mee", "Yong Tau Foo", "Steamed Fish with Soy Sauce", "Sweet and Sour Pork", "Tom Yam Maggi",
       "Marmite Chicken", "Hotpot Kitchen"
     ],
     malay: [
@@ -109,7 +105,7 @@
     const selectedList = foodOptions[cuisine];
     btn.disabled = true;
 
-    // 🔒 Mark as started (prevents refresh bypass)
+    // 🛡️ Prevent refresh cheating
     localStorage.setItem("hasStartedFoodSuggestion", "yes");
 
     let tick = 0;
@@ -121,16 +117,22 @@
     setTimeout(() => {
       clearInterval(interval);
       const result = selectedList[Math.floor(Math.random() * selectedList.length)];
-      box.textContent = `🍽️ Try: ${result}`;
+      const encodedFood = encodeURIComponent(result + " near me");
+      const googleLink = `https://www.google.com/maps/search/${encodedFood}`;
+
+      box.innerHTML = `
+        🍽️ Try: <strong>${result}</strong><br>
+        📍 <a href="${googleLink}" target="_blank">See nearby places on Google Maps</a>
+      `;
+
       btn.disabled = true;
       btn.textContent = "✅ Done";
 
-      // 🔒 Mark as completed
+      // 🎯 Mark final access
       localStorage.setItem("hasSeenFoodSuggestion", "yes");
     }, shuffleDuration);
   }
 </script>
-
 
 </body>
 </html>
