@@ -38,32 +38,7 @@
 </head>
 <body>
 
-<!-- ⛔ Block repeated users before anything loads -->
-<script>
-  const hasStarted = localStorage.getItem("hasStartedFoodSuggestion");
-  if (hasStarted) {
-    document.write(`
-      <h2>😋 You’ve already received your food suggestion!</h2>
-      <p>Next time you're hungry, scan the code again!</p>
-    `);
-    throw new Error("Already viewed");
-  }
-</script>
-
-<h1>🍽️ Can't Decide What to Eat?</h1>
-<p>Select a cuisine below and we'll surprise you!</p>
-
-<select id="cuisineSelect">
-  <option value="">-- Choose Cuisine --</option>
-  <option value="chinese">Malaysian Chinese</option>
-  <option value="malay">Malay</option>
-  <option value="indian">Indian</option>
-  <option value="western">Western</option>
-</select>
-<br/>
-<button id="go" onclick="startSuggestion()">Get Suggestion!</button>
-
-<div class="box" id="suggestion"> </div>
+<div id="app"></div>
 
 <script>
   const foodOptions = {
@@ -92,41 +67,69 @@
   const shuffleDuration = 1500;
   const frameSpeed = 100;
 
-  function startSuggestion() {
-    const cuisine = document.getElementById("cuisineSelect").value;
-    const box = document.getElementById("suggestion");
-    const btn = document.getElementById("go");
+  const hasUsed = localStorage.getItem("hasUsedSuggestion") === "true";
 
-    if (!cuisine) {
-      alert("Please select a cuisine first.");
-      return;
-    }
+  const app = document.getElementById("app");
 
-    const selectedList = foodOptions[cuisine];
-    btn.disabled = true;
+  if (hasUsed) {
+    // ⛔ Already used — block interaction
+    app.innerHTML = `
+      <h2>😋 You’ve already received your food suggestion!</h2>
+      <p>Please scan the QR code again to get a new one.</p>
+    `;
+  } else {
+    // ✅ First-time user — show the UI
+    app.innerHTML = `
+      <h1>🍽️ Can't Decide What to Eat?</h1>
+      <p>Select a cuisine below and we'll surprise you!</p>
+      <select id="cuisineSelect">
+        <option value="">-- Choose Cuisine --</option>
+        <option value="chinese">Malaysian Chinese</option>
+        <option value="malay">Malay</option>
+        <option value="indian">Indian</option>
+        <option value="western">Western</option>
+      </select>
+      <br/>
+      <button id="go">Get Suggestion!</button>
+      <div class="box" id="suggestion"> </div>
+    `;
 
-    // 🛡 Mark as started to block even after refresh
-    localStorage.setItem("hasStartedFoodSuggestion", "yes");
+    document.getElementById("go").onclick = () => {
+      const cuisine = document.getElementById("cuisineSelect").value;
+      const box = document.getElementById("suggestion");
+      const btn = document.getElementById("go");
 
-    let tick = 0;
-    const interval = setInterval(() => {
-      box.textContent = selectedList[tick % selectedList.length];
-      tick++;
-    }, frameSpeed);
+      if (!cuisine) {
+        alert("Please select a cuisine first.");
+        return;
+      }
 
-    setTimeout(() => {
-      clearInterval(interval);
-      const result = selectedList[Math.floor(Math.random() * selectedList.length)];
-      const encoded = encodeURIComponent(result + " near me");
-      const gmap = `https://www.google.com/maps/search/${encoded}`;
+      const selectedList = foodOptions[cuisine];
+      btn.disabled = true;
 
-      box.innerHTML = `
-        🍽️ Try: <strong>${result}</strong><br>
-        📍 <a href="${gmap}" target="_blank">See nearby places on Google Maps</a>
-      `;
+      // 🔒 Immediately block future refreshes
+      localStorage.setItem("hasUsedSuggestion", "true");
 
-      btn.textContent = "✅ Done";
-    }, shuffleDuration);
+      let tick = 0;
+      const interval = setInterval(() => {
+        box.textContent = selectedList[tick % selectedList.length];
+        tick++;
+      }, frameSpeed);
+
+      setTimeout(() => {
+        clearInterval(interval);
+        const result = selectedList[Math.floor(Math.random() * selectedList.length)];
+        const encoded = encodeURIComponent(result + " near me");
+        const gmap = `https://www.google.com/maps/search/${encoded}`;
+
+        box.innerHTML = `
+          🍽️ Try: <strong>${result}</strong><br>
+          📍 <a href="${gmap}" target="_blank">See nearby places on Google Maps</a>
+        `;
+
+        btn.textContent = "✅ Done";
+      }, shuffleDuration);
+    };
   }
 </script>
 
